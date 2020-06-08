@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: impersonate-helm-broker
+  namespace: impersonate-helm-broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: impersonate-helm-broker
+  template:
+    metadata:
+      labels:
+        app: impersonate-helm-broker
+    spec:
+      containers:
+        - name: broker
+          image: mszostok/impersonate-helm-broker:0.1.0
+          ports:
+            - containerPort: 8080

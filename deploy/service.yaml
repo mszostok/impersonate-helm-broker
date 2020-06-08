@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: impersonate-helm-broker
+  namespace: impersonate-helm-broker
+spec:
+  selector:
+    app: impersonate-helm-broker
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

@@ -1,0 +1,6 @@
+apiVersion: servicecatalog.k8s.io/v1beta1
+kind: ClusterServiceBroker
+metadata:
+  name: impersonate-helm-broker
+spec:
+  url: http://impersonate-helm-broker.impersonate-helm-broker.svc.cluster.local
