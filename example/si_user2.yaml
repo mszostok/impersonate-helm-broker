@@ -1,0 +1,8 @@
+apiVersion: servicecatalog.k8s.io/v1beta1
+kind: ServiceInstance
+metadata:
+  name: redis-user2
+  namespace: impersonate-helm-broker
+spec:
+  clusterServiceClassExternalName: redis
+  clusterServicePlanExternalName: default

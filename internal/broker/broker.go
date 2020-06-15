@@ -6,16 +6,20 @@ import (
 
 	"github.com/mszostok/impersonate-helm-broker/internal/helm"
 	"github.com/mszostok/impersonate-helm-broker/internal/middleware"
+
+	"code.cloudfoundry.org/lager"
 	"github.com/pivotal-cf/brokerapi/v7/domain"
 )
 
-type Dummy struct{}
+type Dummy struct {
+	log lager.Logger
+}
 
-func (d Dummy) Services(ctx context.Context) ([]domain.Service, error) {
+func (d Dummy) Services(_ context.Context) ([]domain.Service, error) {
 	return []domain.Service{
 		{
 			ID:                   "123-123-123-123-123-123",
-			Name:                 "dummy-service",
+			Name:                 "redis",
 			Description:          "Hakuna Matata",
 			Bindable:             false,
 			InstancesRetrievable: false,
@@ -24,7 +28,7 @@ func (d Dummy) Services(ctx context.Context) ([]domain.Service, error) {
 			Plans: []domain.ServicePlan{
 				{
 					ID:          "321-312-321-321-321-321",
-					Name:        "dummy-plan",
+					Name:        "default",
 					Description: "Pico Bello",
 				},
 			},
@@ -33,10 +37,10 @@ func (d Dummy) Services(ctx context.Context) ([]domain.Service, error) {
 }
 
 func (d Dummy) Provision(ctx context.Context, instanceID string, details domain.ProvisionDetails, asyncAllowed bool) (domain.ProvisionedServiceSpec, error) {
-	osbAPICtx := struct {
-		Namespace string `json:"namespace"`
-	}{}
-	if err := json.Unmarshal(details.GetRawContext(), &osbAPICtx); err != nil {
+	d.log.WithData(lager.Data{"instanceID": instanceID}).Info("Provisioning request")
+
+	ns, err := d.getNamespace(details)
+	if err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
 
@@ -45,7 +49,13 @@ func (d Dummy) Provision(ctx context.Context, instanceID string, details domain.
 		return domain.ProvisionedServiceSpec{}, err
 	}
 
-	err = helm.Install(instanceID, osbAPICtx.Namespace, ui.Username, ui.Groups)
+	d.log.WithData(lager.Data{
+		"instanceID": instanceID,
+		"namespace":  ns,
+		"username":   ui.Username,
+		"groups":     ui.Groups,
+	}).Info("Installing chart")
+	err = helm.Install(instanceID, ns, ui.Username, ui.Groups)
 	if err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
@@ -56,7 +66,26 @@ func (d Dummy) Provision(ctx context.Context, instanceID string, details domain.
 }
 
 func (d Dummy) Deprovision(ctx context.Context, instanceID string, details domain.DeprovisionDetails, asyncAllowed bool) (domain.DeprovisionServiceSpec, error) {
-	panic("implement me")
+	d.log.WithData(lager.Data{"instanceID": instanceID}).Info("Deprovisioning request")
+
+	ui, err := middleware.OriginatingIdentityFromContext(ctx)
+	if err != nil {
+		return domain.DeprovisionServiceSpec{}, err
+	}
+
+	d.log.WithData(lager.Data{
+		"instanceID": instanceID,
+		"username":   ui.Username,
+		"groups":     ui.Groups,
+	}).Info("Uninstalling chart")
+	err = helm.Uninstall(instanceID, ui.Username, ui.Groups)
+	if err != nil {
+		return domain.DeprovisionServiceSpec{}, err
+	}
+
+	return domain.DeprovisionServiceSpec{
+		IsAsync: false,
+	}, nil
 }
 
 func (d Dummy) GetInstance(ctx context.Context, instanceID string) (domain.GetInstanceDetailsSpec, error) {
@@ -85,4 +114,15 @@ func (d Dummy) GetBinding(ctx context.Context, instanceID, bindingID string) (do
 
 func (d Dummy) LastBindingOperation(ctx context.Context, instanceID, bindingID string, details domain.PollDetails) (domain.LastOperation, error) {
 	panic("implement me")
+}
+
+func (d Dummy) getNamespace(details domain.ProvisionDetails) (string, error) {
+	osbAPICtx := struct {
+		Namespace string `json:"namespace"`
+	}{}
+	if err := json.Unmarshal(details.GetRawContext(), &osbAPICtx); err != nil {
+		return "", err
+	}
+
+	return osbAPICtx.Namespace, nil
 }

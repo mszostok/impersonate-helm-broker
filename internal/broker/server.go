@@ -15,12 +15,12 @@ import (
 func NewServer(logger lager.Logger) http.Handler {
 	router := mux.NewRouter()
 
-	brokerapi.AttachRoutes(router, Dummy{}, logger)
+	brokerapi.AttachRoutes(router, Dummy{logger}, logger)
 
 	apiVersionMiddleware := middlewares.APIVersionMiddleware{LoggerFactory: logger}
 
 	router.Use(middlewares.AddCorrelationIDToContext)
-	router.Use(middleware.AddOriginatingIdentityToContext) // Own implementation because pivotal api do not expose it publicly
+	router.Use(middleware.AddOriginatingIdentityToContext) // Own implementation because pivotal/brokerapi do not expose it publicly
 	router.Use(apiVersionMiddleware.ValidateAPIVersionHdr)
 	router.Use(middlewares.AddInfoLocationToContext)
 

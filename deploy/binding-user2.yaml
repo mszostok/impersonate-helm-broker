@@ -1,0 +1,21 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: serviceinstance-manager
+rules:
+  - apiGroups: ["servicecatalog.k8s.io"]
+    resources: ["serviceinstances"]
+    verbs:     ["get","list","watch", "update", "create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: "user2-serviceinstance-manager"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: serviceinstance-manager
+subjects:
+  - apiGroup: ""
+    kind: User
+    name: "user2@kyma.cx"

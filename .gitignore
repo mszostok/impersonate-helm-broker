@@ -99,3 +99,4 @@ fabric.properties
 
 *.iml
 /broker
+/scripts

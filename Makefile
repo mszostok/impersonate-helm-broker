@@ -21,6 +21,9 @@ docker/build: bin/broker-linux
 	docker build -t mszostok/impersonate-helm-broker:0.1.0 .
 .PHONY: docker/build
 
-docker/push: docker/build
+docker/push:
 	docker push mszostok/impersonate-helm-broker:0.1.0
 .PHONY: docker/push
+
+docker/all: docker/build docker/push
+.PHONY: docker/all

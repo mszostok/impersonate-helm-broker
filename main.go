@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/mszostok/impersonate-helm-broker/internal/broker"
@@ -13,11 +14,11 @@ func main() {
 	logger := lager.NewLogger("impersonate-poc")
 	brokerServer := broker.NewServer(logger)
 
-	check(http.ListenAndServe(":8080", brokerServer))
+	check(http.ListenAndServe(":8080", brokerServer), "while staring HTTP server")
 }
 
-func check(err error) {
+func check(err error, context string) {
 	if err != nil {
-		panic(err)
+		log.Fatalf("%s: %v", context, err)
 	}
 }

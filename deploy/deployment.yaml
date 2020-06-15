@@ -10,11 +10,18 @@ spec:
       app: impersonate-helm-broker
   template:
     metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
       labels:
         app: impersonate-helm-broker
     spec:
+      serviceAccountName: "impersonate-helm-broker"
       containers:
         - name: broker
           image: mszostok/impersonate-helm-broker:0.1.0
+          imagePullPolicy: Always
+          env:
+            - name: CHART_LOCATION
+              value: "/bin/asset/chart/redis"
           ports:
             - containerPort: 8080
