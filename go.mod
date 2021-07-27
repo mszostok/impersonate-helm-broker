@@ -9,8 +9,8 @@ require (
 	github.com/kubernetes-sigs/service-catalog v0.3.0
 	github.com/pivotal-cf/brokerapi/v7 v7.2.0
 	github.com/sanity-io/litter v1.2.0
-	helm.sh/helm/v3 v3.2.2
-	k8s.io/cli-runtime v0.18.3
-	k8s.io/client-go v0.18.3
+	helm.sh/helm/v3 v3.6.1
+	k8s.io/cli-runtime v0.21.0
+	k8s.io/client-go v0.21.0
 	rsc.io/letsencrypt v0.0.3 // indirect
 )
